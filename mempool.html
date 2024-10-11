@@ -12,7 +12,7 @@
       src="https://analytics.diwaker.io/js/script.js"></script>
   </head>
   <body class="has-navbar-fixed-top">
-    <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+    <nav data-theme="dark" class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
       <div class="navbar-brand">
         <a class="navbar-item" href="/">Stacks Hub: Stats and Graphs</a>
       </div>
@@ -126,7 +126,7 @@
           },
         });
       }
-      fetch("http://localhost:8123/mempool/size")
+      fetch(`${apiBaseUrl}/mempool/size`)
         .then((res) => res.json())
         .then((data) => render(data));
     </script>
