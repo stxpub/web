@@ -1,0 +1,139 @@
+<!doctype html>
+<html data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stacks Hub</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@hpcc-js/wasm/dist/graphviz.umd.js"></script>
+    <script
+      defer
+      data-domain="hub.stx.pub"
+      src="https://analytics.diwaker.io/js/script.js"></script>
+  </head>
+  <body class="has-navbar-fixed-top">
+    <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+      <div class="navbar-brand">
+        <a class="navbar-item" href="index.html">Stacks Hub: Stats and Graphs</a>
+      </div>
+      <div class="navbar-menu">
+        <div class="navbar-start">
+          <a class="navbar-item" href="mempool.html">Mempool</a>
+        </div>
+      </div>
+    </nav>
+    <main class="container content">
+      <section class="section">
+        <h3>Credits</h3>
+        <p>
+          The initial version of this project was "inspired" by obycode's
+          <a href="https://github.com/obycode/miner-sim/tree/miner-vis">miner-vis</a>
+          and jcnelson's
+          <a href="https://github.com/jcnelson/status.sh/blob/main/status.sh">status.sh</a>
+          - thanks fellas!
+        </p>
+      </section>
+      <section class="section" x-data="getMiners()">
+        <h2>Miner Power (last 144 blocks)</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Miner</th>
+              <th>Blocks Won</th>
+              <th>BTC Spent (sats)</th>
+              <th>STX Earnt</th>
+              <th>Win rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="miner in miners">
+              <tr>
+                <td x-html="link(miner.Address)"></td>
+                <td x-text="miner.BlocksWon"></td>
+                <td x-text="miner.BtcSpent"></td>
+                <td x-text="miner.StxEarnt"></td>
+                <td x-text="miner.WinRate"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </section>
+      <section class="section">
+        <h2>Visualizing Block Commits</h2>
+        <p>
+          This is a visualization of the Stacks chain, from the perspective of the block commits
+          broadcast by Stacks miners on Bitcoin.
+        </p>
+        <p>How to read this graph</p>
+        <ul>
+          <li>
+            Each "row" or "cluster" represents commits at a given Bitcoin block. The label links to
+            the corresponding block on mempool.space
+          </li>
+          <li>Each block commit node links to the corresponding Bitcoin transaction.</li>
+          <li>
+            Winning commits are solid, the rest are dashed. For winning commits, the node links to
+            the corresponding Stacks block instead.
+          </li>
+          <li>The bold blue edges trace the "canonical" chain</li>
+          <li>
+            Red edges indicate blocks building on top of non-canonical tips (indicating forks)
+          </li>
+          <li>
+            Block commits from the same miner have the same fill color. The algorithm is
+            rudimentary: I cast the first 8 bytes of the address to an int, and then modulo that
+            into a fixed set of colors.
+          </li>
+        </ul>
+      </section>
+      <section class="section" x-data="getViz()">
+        <h3>
+          Graph generated at <span x-text="viz.Timestamp"></span>, Bitcoin block height
+          <span x-text="viz.BitcoinBlockHeight"></span>.
+        </h3>
+        <div x-html="render(viz.Dot)"></div>
+      </section>
+    </main>
+    <script type="text/javascript">
+      // Determine the base URL based on the current hostname
+      const apiBaseUrl =
+        window.location.protocol === "file:" ? "http://localhost:8123" : "https://api.stx.pub";
+
+      function link(address) {
+        return `<a href="https://explorer.stacks.co/address/${address}">${address}</a>`;
+      }
+
+      function render(dot) {
+        var hpccWasm = window["@hpcc-js/wasm"];
+        return hpccWasm.Graphviz.load().then((graphviz) => graphviz.layout(dot, "svg", "dot"));
+      }
+
+      function getViz() {
+        return {
+          viz: { Timestamp: "", BitcoinBlockHeight: "", Dot: "" },
+          init() {
+            fetch(`${apiBaseUrl}/miners/viz`)
+              .then((res) => res.json())
+              .then((data) => {
+                this.viz = data;
+              });
+          },
+        };
+      }
+
+      function getMiners() {
+        return {
+          miners: [],
+          init() {
+            fetch(`${apiBaseUrl}/miners/power`)
+              .then((res) => res.json())
+              .then((data) => {
+                this.miners = data;
+              });
+          },
+        };
+      }
+    </script>
+  </body>
+</html>

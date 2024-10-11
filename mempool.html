@@ -1,0 +1,134 @@
+<!doctype html>
+<html data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stacks Hub</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    <script
+      defer
+      data-domain="hub.stx.pub"
+      src="https://analytics.diwaker.io/js/script.js"></script>
+  </head>
+  <body class="has-navbar-fixed-top">
+    <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+      <div class="navbar-brand">
+        <a class="navbar-item" href="index.html">Stacks Hub: Stats and Graphs</a>
+      </div>
+      <div class="navbar-menu">
+        <div class="navbar-start">
+          <a class="navbar-item" href="mempool.html">Mempool</a>
+        </div>
+      </div>
+    </nav>
+    <main class="container content">
+      <header>
+        <h1>Mempool</h1>
+      </header>
+      <section class="section">
+        <h3>Caveats, aka how to interpret this data</h3>
+        <ul>
+          <li>
+            I'm literally scanning the `mempool` table on a single Stacks node. Consider that
+            different nodes on the network may receive different transactions in different orders.
+            So the mempool on one node may be different from the mempool on another.
+          </li>
+          <li>
+            Related to above: the Stacks node is very conservative about removing transactions from
+            this table. So transactions already processed might still linger in it, and transactions
+            that might never be processed (e.g. fees are too low or there's a nonce gap) might
+            remain in there until they are aged out. So the actual number of transactions that can
+            be processed is likely much lower than what's reported here.
+          </li>
+        </ul>
+      </section>
+      <section class="section">
+        <h2>Mempool size over time</h2>
+        <div>
+          <canvas id="chart"></canvas>
+        </div>
+      </section>
+      <section class="section" x-data="getMempoolPopular()">
+        <h2>What's in the mempool?</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Transaction Type / Contract</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="p in popular">
+              <tr>
+                <td x-html="link(p.Contract)"></td>
+                <td x-text="p.Count"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@3.6.0/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script type="text/javascript">
+      // Determine the base URL based on the current hostname
+      const apiBaseUrl =
+        window.location.protocol === "file:" ? "http://localhost:8123" : "https://api.stx.pub";
+
+      function link(address) {
+        return `<a href="https://explorer.stacks.co/txid/${address}?chain=mainnet">${address}</a>`;
+      }
+      function getMempoolPopular() {
+        return {
+          popular: [],
+          init() {
+            fetch(`${apiBaseUrl}/mempool/popular`)
+              .then((res) => res.json())
+              .then((data) => {
+                this.popular = data.Popular;
+              });
+          },
+        };
+      }
+      function getMempoolSize() {
+        return {
+          snapshots: [],
+          init() {
+            fetch(`${apiBaseUrl}/mempool/size`)
+              .then((res) => res.json())
+              .then((data) => {
+                this.snapshots = data;
+              });
+          },
+        };
+      }
+      function render(data) {
+        const ctx = document.getElementById("chart");
+        new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: data.map((row) => row.Timestamp),
+            datasets: [
+              {
+                label: "# transactions",
+                data: data.map((row) => row.Count),
+              },
+            ],
+          },
+          options: {
+            scales: {
+              x: {
+                type: "timeseries",
+              },
+            },
+          },
+        });
+      }
+      fetch("http://localhost:8123/mempool/size")
+        .then((res) => res.json())
+        .then((data) => render(data));
+    </script>
+  </body>
+</html>
