@@ -1,0 +1,44 @@
+<!doctype html>
+<html data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stacks Hub</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    <script
+      defer
+      data-domain="hub.stx.pub"
+      src="https://analytics.diwaker.io/js/script.js"></script>
+  </head>
+  <body class="has-navbar-fixed-top">
+    <nav data-theme="dark" class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+      <div class="navbar-brand">
+        <a class="navbar-item" href="/">Stacks Hub: Stats and Graphs</a>
+      </div>
+      <div class="navbar-menu">
+        <div class="navbar-start">
+          <a class="navbar-item" href="/mempool">Mempool</a>
+          <a class="navbar-item" href="/about">About</a>
+        </div>
+      </div>
+    </nav>
+    <main class="container content">
+      <section class="section">
+        <h1>About stx.hub</h1>
+        <p>Hand-crafted with ✨ by <a href="https://diwaker.io">me</a>, using:</p>
+        <ul>
+        <li>API: Go, go-chi, sqlite</li>
+        <li>Front-end: Bulma CSS, Alpine JS, Chart JS, HPCC WASM Graphviz</li>
+        </ul>
+        <p>
+          The initial version of this project was "inspired" by obycode's
+          <a href="https://github.com/obycode/miner-sim/tree/miner-vis">miner-vis</a>
+          and jcnelson's
+          <a href="https://github.com/jcnelson/status.sh/blob/main/status.sh">status.sh</a>
+          - thanks fellas!
+        </p>
+      </section>
+      </main>
+  </body>
+</html>
