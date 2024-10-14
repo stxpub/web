@@ -90,6 +90,25 @@
         return `<a href="https://explorer.stacks.co/txid/${address}?chain=mainnet">${address}</a>`;
       }
 
+      function formatAge(ageInSeconds) {
+        const hours = Math.floor(ageInSeconds / 3600);
+        const minutes = Math.floor((ageInSeconds % 3600) / 60);
+        const seconds = ageInSeconds % 60;
+
+        let formattedAge = "";
+        if (hours > 0) {
+          formattedAge += hours + "h ";
+        }
+        if (minutes > 0) {
+          formattedAge += minutes + "m ";
+        }
+        if (seconds > 0) {
+          formattedAge += seconds + "s";
+        }
+
+        return formattedAge.trim();
+      }
+
       function getMempoolPopular() {
         return {
           popular: [],
@@ -128,7 +147,7 @@
                 new Chart(acdf, {
                   type: "line",
                   data: {
-                    labels: data.AgeDistribution.map((row) => row.ValueAt),
+                    labels: data.AgeDistribution.map((row) => formatAge(row.ValueAt)),
                     datasets: [
                       {
                         label: "% of transactions with age <= x seconds",
