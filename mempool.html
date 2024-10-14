@@ -6,10 +6,7 @@
     <title>Stacks Hub</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" />
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-    <script
-      defer
-      data-domain="hub.stx.pub"
-      src="https://analytics.diwaker.io/js/script.js"></script>
+    <script defer data-domain="hub.stx.pub" src="https://analytics.diwaker.io/js/script.js"></script>
   </head>
   <body class="has-navbar-fixed-top">
     <nav data-theme="dark" class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
@@ -19,6 +16,7 @@
       <div class="navbar-menu">
         <div class="navbar-start">
           <a class="navbar-item" href="/mempool">Mempool</a>
+          <a class="navbar-item" href="/utils">Utilities</a>
           <a class="navbar-item" href="/about">About</a>
         </div>
       </div>
@@ -31,16 +29,15 @@
         <h3>Caveats, aka how to interpret this data</h3>
         <ul>
           <li>
-            I'm literally scanning the `mempool` table on a single Stacks node. Consider that
-            different nodes on the network may receive different transactions in different orders.
-            So the mempool on one node may be different from the mempool on another.
+            I'm literally scanning the `mempool` table on a single Stacks node. Consider that different nodes on the
+            network may receive different transactions in different orders. So the mempool on one node may be different
+            from the mempool on another.
           </li>
           <li>
-            Related to above: the Stacks node is very conservative about removing transactions from
-            this table. So transactions already processed might still linger in it, and transactions
-            that might never be processed (e.g. fees are too low or there's a nonce gap) might
-            remain in there until they are aged out. So the actual number of transactions that can
-            be processed is likely much lower than what's reported here.
+            Related to above: the Stacks node is very conservative about removing transactions from this table. So
+            transactions already processed might still linger in it, and transactions that might never be processed
+            (e.g. fees are too low or there's a nonce gap) might remain in there until they are aged out. So the actual
+            number of transactions that can be processed is likely much lower than what's reported here.
           </li>
         </ul>
       </section>
@@ -68,6 +65,18 @@
             </template>
           </tbody>
         </table>
+        <h3>Cumulative distribution of Transaction Fees</h3>
+        <div>
+          <canvas id="fee-cdf"></canvas>
+        </div>
+        <h3>Cumulative distribution of Transaction Sizes</h3>
+        <div>
+          <canvas id="size-cdf"></canvas>
+        </div>
+        <h3>Cumulative distribution of Transaction Age</h3>
+        <div>
+          <canvas id="age-cdf"></canvas>
+        </div>
       </section>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -75,36 +84,64 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script type="text/javascript">
       // Determine the base URL based on the current hostname
-      const apiBaseUrl =
-        window.location.protocol === "file:" ? "http://localhost:8123" : "https://api.stx.pub";
+      const apiBaseUrl = window.location.protocol === "file:" ? "http://localhost:8123" : "https://api.stx.pub";
 
       function link(address) {
         return `<a href="https://explorer.stacks.co/txid/${address}?chain=mainnet">${address}</a>`;
       }
+
       function getMempoolPopular() {
         return {
           popular: [],
           init() {
-            fetch(`${apiBaseUrl}/mempool/popular`)
+            fetch(`${apiBaseUrl}/mempool/stats`)
               .then((res) => res.json())
               .then((data) => {
                 this.popular = data.Popular;
+                const fcdf = document.getElementById("fee-cdf");
+                new Chart(fcdf, {
+                  type: "line",
+                  data: {
+                    labels: data.FeeDistribution.map((row) => row.ValueAt / 1e6),
+                    datasets: [
+                      {
+                        label: "% of transactions with fee <= x STX",
+                        data: data.FeeDistribution.map((row) => row.Quantile),
+                      },
+                    ],
+                  },
+                });
+                const scdf = document.getElementById("size-cdf");
+                new Chart(scdf, {
+                  type: "line",
+                  data: {
+                    labels: data.SizeDistribution.map((row) => row.ValueAt),
+                    datasets: [
+                      {
+                        label: "% of transactions with size <= x bytes",
+                        data: data.SizeDistribution.map((row) => row.Quantile),
+                      },
+                    ],
+                  },
+                });
+                const acdf = document.getElementById("age-cdf");
+                new Chart(acdf, {
+                  type: "line",
+                  data: {
+                    labels: data.AgeDistribution.map((row) => row.ValueAt),
+                    datasets: [
+                      {
+                        label: "% of transactions with age <= x seconds",
+                        data: data.FeeDistribution.map((row) => row.Quantile),
+                      },
+                    ],
+                  },
+                });
               });
           },
         };
       }
-      function getMempoolSize() {
-        return {
-          snapshots: [],
-          init() {
-            fetch(`${apiBaseUrl}/mempool/size`)
-              .then((res) => res.json())
-              .then((data) => {
-                this.snapshots = data;
-              });
-          },
-        };
-      }
+
       function render(data) {
         const ctx = document.getElementById("chart");
         new Chart(ctx, {
