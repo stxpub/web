@@ -1,0 +1,76 @@
+<!doctype html>
+<html data-theme="light">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Stacks Hub</title>
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
+        />
+        <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"
+        ></script>
+        <script
+            defer
+            data-domain="hub.stx.pub"
+            src="https://analytics.diwaker.io/js/script.js"
+        ></script>
+    </head>
+    <body class="has-navbar-fixed-top">
+        <nav
+            data-theme="dark"
+            class="navbar is-fixed-top"
+            role="navigation"
+            aria-label="main navigation"
+        >
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">Stacks Hub: Stats and Graphs</a>
+            </div>
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="/mempool">Mempool</a>
+                    <a class="navbar-item" href="/about">About</a>
+                </div>
+            </div>
+        </nav>
+        <main class="container content">
+            <section class="section">
+                <h1>Decode Transaction</h1>
+                <div x-data="{ txHex: '', decodedTx: '' }">
+                    <textarea
+                        x-model="txHex"
+                        @keydown.enter.prevent="submitTx"
+                        class="textarea"
+                        placeholder="Enter hex-encoded transaction"
+                    ></textarea>
+                    <button @click="submitTx" class="button is-primary mt-2">
+                        Submit
+                    </button>
+                    <pre
+                        x-show="decodedTx"
+                        class="mt-4"
+                    ><code x-text="decodedTx"></code></pre>
+                </div>
+
+                <script>
+                    function submitTx() {
+                        fetch("https://api.stx.pub/tx/decode", {
+                            method: "POST",
+                            body: this.txHex,
+                        })
+                            .then((response) => response.json())
+                            .then((data) => {
+                                this.decodedTx = JSON.stringify(data, null, 2);
+                            })
+                            .catch((error) => {
+                                console.error("Error:", error);
+                                this.decodedTx = "Error decoding transaction";
+                            });
+                    }
+                </script>
+            </section>
+        </main>
+    </body>
+</html>
