@@ -117,6 +117,7 @@
               .then((res) => res.json())
               .then((data) => {
                 this.popular = data.Popular;
+                Chart.defaults.plugins.legend = false;
                 const fcdf = document.getElementById("fee-cdf");
                 new Chart(fcdf, {
                   type: "line",
@@ -124,10 +125,15 @@
                     labels: data.FeeDistribution.map((row) => row.ValueAt / 1e6),
                     datasets: [
                       {
-                        label: "% of transactions with fee <= x STX",
                         data: data.FeeDistribution.map((row) => row.Quantile),
                       },
                     ],
+                  },
+                  options: {
+                    scales: {
+                      x: { title: { display: true, text: "Transaction Fees (STX)" } },
+                      y: { title: { display: true, text: "%age Transactions" } },
+                    },
                   },
                 });
                 const scdf = document.getElementById("size-cdf");
@@ -137,10 +143,15 @@
                     labels: data.SizeDistribution.map((row) => row.ValueAt),
                     datasets: [
                       {
-                        label: "% of transactions with size <= x bytes",
                         data: data.SizeDistribution.map((row) => row.Quantile),
                       },
                     ],
+                  },
+                  options: {
+                    scales: {
+                      x: { title: { display: true, text: "Transaction Size (bytes)" } },
+                      y: { title: { display: true, text: "%age Transactions" } },
+                    },
                   },
                 });
                 const acdf = document.getElementById("age-cdf");
@@ -150,10 +161,15 @@
                     labels: data.AgeDistribution.map((row) => formatAge(row.ValueAt)),
                     datasets: [
                       {
-                        label: "% of transactions with age <= x seconds",
                         data: data.FeeDistribution.map((row) => row.Quantile),
                       },
                     ],
+                  },
+                  options: {
+                    scales: {
+                      x: { title: { display: true, text: "Transaction Age" } },
+                      y: { title: { display: true, text: "%age Transactions" } },
+                    },
                   },
                 });
               });
