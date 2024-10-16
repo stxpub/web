@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Stacks Hub</title>
+    <link rel="icon" href="/favicon.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" />
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@hpcc-js/wasm/dist/graphviz.umd.js"></script>
@@ -78,7 +79,7 @@
           Graph generated at <span x-text="viz.Timestamp"></span>, Bitcoin block height
           <span x-text="viz.BitcoinBlockHeight"></span>.
         </h3>
-        <div x-html="render(viz.Dot)"></div>
+        <div id="viz"></div>
       </section>
     </main>
     <script type="text/javascript">
@@ -89,11 +90,6 @@
         return `<a href="https://explorer.stacks.co/address/${address}">${address}</a>`;
       }
 
-      function render(dot) {
-        var hpccWasm = window["@hpcc-js/wasm"];
-        return hpccWasm.Graphviz.load().then((graphviz) => graphviz.layout(dot, "svg", "dot"));
-      }
-
       function getViz() {
         return {
           viz: { Timestamp: "", BitcoinBlockHeight: "", Dot: "" },
@@ -102,6 +98,11 @@
               .then((res) => res.json())
               .then((data) => {
                 this.viz = data;
+                var hpccWasm = window["@hpcc-js/wasm"];
+                hpccWasm.Graphviz.load().then((graphviz) => {
+                  const svg = graphviz.layout(data.Dot, "svg", "dot");
+                  document.getElementById("viz").innerHTML = svg;
+                });
               });
           },
         };
