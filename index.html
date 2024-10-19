@@ -24,12 +24,13 @@
       </div>
     </nav>
     <main class="container content">
-      <section class="section" x-data="getMiners()">
+      <section class="section table-container" x-data="getMiners()">
         <h2>Miner Power (last 144 blocks)</h2>
         <table class="table">
           <thead>
             <tr>
               <th>Miner</th>
+              <th>STX Recipient</th>
               <th>Blocks Won</th>
               <th>BTC Spent (sats)</th>
               <th>STX Earnt</th>
@@ -39,7 +40,8 @@
           <tbody>
             <template x-for="miner in miners">
               <tr>
-                <td x-html="link(miner.Address)"></td>
+                <td x-html="btc(miner.BitcoinAddress)"></td>
+                <td x-html="stx(miner.StacksRecipient)"></td>
                 <td x-text="miner.BlocksWon"></td>
                 <td x-text="miner.BtcSpent"></td>
                 <td x-text="miner.StxEarnt"></td>
@@ -86,8 +88,12 @@
       // Determine the base URL based on the current hostname
       const apiBaseUrl = window.location.protocol === "file:" ? "http://localhost:8123" : "https://api.stx.pub";
 
-      function link(address) {
-        return `<a href="https://explorer.stacks.co/address/${address}">${address}</a>`;
+      function stx(address) {
+        return `<a href="https://explorer.hiro.so/address/${address}">${address}</a>`;
+      }
+
+      function btc(address) {
+        return `<a href="https://mempool.space/address/${address}">${address}</a>`;
       }
 
       function getViz() {
