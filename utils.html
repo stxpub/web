@@ -10,19 +10,27 @@
     <script defer data-domain="hub.stx.pub" src="https://analytics.diwaker.io/js/script.js"></script>
   </head>
   <body class="has-navbar-fixed-top">
-    <nav data-theme="dark" class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
-      <div class="navbar-brand">
-        <a class="navbar-item" href="/">Stacks Hub: Stats and Graphs</a>
-      </div>
-      <div class="navbar-menu">
-        <div class="navbar-start">
-          <a class="navbar-item" href="/mempool">Mempool</a>
-          <a class="navbar-item" href="/utils">Utilities</a>
-          <a class="navbar-item" href="/about">About</a>
-        </div>
-      </div>
-    </nav>
-    <main class="container content">
+      <nav data-theme="dark" class="navbar is-fixed-top" role="navigation" aria-label="main navigation" x-data="{ isOpen: false }">
+          <div class="navbar-brand">
+              <a class="navbar-item" href="/">Stacks Hub: Stats and Graphs</a>
+              <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" @click="isOpen = !isOpen">
+              <span aria-hidden="true"></span>
+              <span aria-hidden="true"></span>
+              <span aria-hidden="true"></span>
+              <span aria-hidden="true"></span>
+              </a>
+          </div>
+          <div class="navbar-menu" :class="{ 'is-active': isOpen }">
+              <div class="navbar-start">
+              <a class="navbar-item" href="/mempool">Mempool</a>
+              <a class="navbar-item" href="/utils">Utilities</a>
+              </div>
+              <div class="navbar-end">
+              <a class="navbar-item" href="/about">About</a>
+              </div>
+          </div>
+      </nav>
+      <main class="container content">
       <section class="section">
         <h1>Decode Transaction</h1>
         <div x-data="{ txHex: '', decodedTx: '' }">
