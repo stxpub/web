@@ -38,9 +38,21 @@
     </nav>
     <main class="container content">
       <section class="section">
-        <h2>Block Costs</h2>
+        <h2>Block Costs and Size</h2>
+        <ul>
+          <li>Left Y axis shows the normalized costs by block as a percentage, for easier comparison.</li>
+          <li>Right Y axis shows the block size in bytes.</li>
+        </ul>
         <div>
           <canvas id="costChart"></canvas>
+        </div>
+        <h2>Tenure Costs and Fees</h2>
+        <ul>
+          <li>Left Y axis shows the normalized tenure cost by block as a percentage, for easier comparison.</li>
+          <li>Right Y axis shows tenure transaction fees in uSTX.</li>
+        </ul>
+        <div>
+          <canvas id="tenureChart"></canvas>
         </div>
       </section>
     </main>
@@ -52,6 +64,7 @@
 
       function renderCostChart(data) {
         const ctx = document.getElementById("costChart");
+        const tenureCtx = document.getElementById("tenureChart");
 
         // Get tenure change points
         const tenureChangePoints = data
@@ -62,7 +75,7 @@
           }));
 
         // Prepare datasets for each cost metric
-        const datasets = [
+        const blockData = [
           {
             label: "Read Length",
             data: data.map((block) => (100 * block.Cost.read_length) / 100000000),
@@ -109,11 +122,58 @@
           },
         ];
 
+        const tenureData = [
+          {
+            label: "Read Length",
+            data: data.map((block) => (100 * block.TenureCost.read_length) / 100000000),
+            borderColor: "rgb(255, 99, 132)",
+            tension: 0.1,
+            yAxisID: "y",
+          },
+          {
+            label: "Read Count",
+            data: data.map((block) => (100 * block.TenureCost.read_count) / 15000),
+            borderColor: "rgb(54, 162, 235)",
+            tension: 0.1,
+            yAxisID: "y",
+          },
+          {
+            label: "Write Length",
+            data: data.map((block) => (100 * block.TenureCost.write_length) / 15000000),
+            borderColor: "rgb(75, 192, 192)",
+            tension: 0.1,
+            yAxisID: "y",
+          },
+          {
+            label: "Write Count",
+            data: data.map((block) => (100 * block.TenureCost.write_count) / 15000),
+            borderColor: "rgb(255, 206, 86)",
+            tension: 0.1,
+            yAxisID: "y",
+          },
+          {
+            label: "Runtime",
+            data: data.map((block) => (100 * block.TenureCost.runtime) / 5000000000),
+            borderColor: "rgb(153, 102, 255)",
+            tension: 0.1,
+            yAxisID: "y",
+          },
+          {
+            label: "Tenure Fees",
+            data: data.map((block) => block.TenureTxFees),
+            borderColor: "rgb(255, 159, 64)",
+            tension: 0.1,
+            yAxisID: "y1", // Use the second Y axis
+            borderWidth: 2,
+            borderDash: [5, 5], // Make this line dashed to distinguish it
+          },
+        ];
+
         const blockChart = new Chart(ctx, {
           type: "line",
           data: {
             labels: data.map((block) => block.BlockHeight),
-            datasets: datasets,
+            datasets: blockData,
           },
           options: {
             responsive: true,
@@ -178,6 +238,84 @@
                 title: {
                   display: true,
                   text: "Block Size (bytes)",
+                },
+                grid: {
+                  drawOnChartArea: false, // Only show grid lines for the left y-axis
+                },
+              },
+            },
+          },
+        });
+
+        const tenureChart = new Chart(tenureCtx, {
+          type: "line",
+          data: {
+            labels: data.map((block) => block.BlockHeight),
+            datasets: tenureData,
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: "Block Costs and Size Over Time",
+              },
+              tooltip: {
+                mode: "index",
+                intersect: false,
+                callbacks: {
+                  afterBody: function (tooltipItems) {
+                    const idx = tooltipItems[0].dataIndex;
+                    if (data[idx].TenureChanged) {
+                      return "⚠️ Tenure Changed at this block";
+                    }
+                    return "";
+                  },
+                },
+              },
+              annotation: {
+                annotations: {
+                  ...tenureChangePoints.reduce(
+                    (acc, point) => ({
+                      ...acc,
+                      [`tenure-${point.blockHeight}`]: {
+                        type: "line",
+                        xMin: point.xIndex,
+                        xMax: point.xIndex,
+                        borderColor: "rgba(0, 0, 0, 0.5)",
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                      },
+                    }),
+                    {},
+                  ),
+                },
+              },
+            },
+            scales: {
+              x: {
+                display: true,
+                title: {
+                  display: true,
+                  text: "Block Height",
+                },
+              },
+              y: {
+                type: "linear",
+                display: true,
+                position: "left",
+                title: {
+                  display: true,
+                  text: "Cost",
+                },
+              },
+              y1: {
+                type: "linear",
+                display: true,
+                position: "right",
+                title: {
+                  display: true,
+                  text: "Tenure Fees (uSTX)",
                 },
                 grid: {
                   drawOnChartArea: false, // Only show grid lines for the left y-axis
