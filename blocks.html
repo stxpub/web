@@ -54,10 +54,16 @@
         <div>
           <canvas id="tenureChart"></canvas>
         </div>
+        <h2>Block Timestamps</h2>
+        <div>
+          <canvas id="timeChart"></canvas>
+        </div>
       </section>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@3.6.0/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script type="text/javascript">
       // Determine the base URL based on the current hostname
       const apiBaseUrl = window.location.protocol === "file:" ? "http://localhost:8123" : "https://api.stx.pub";
@@ -65,6 +71,11 @@
       function renderCostChart(data) {
         const ctx = document.getElementById("costChart");
         const tenureCtx = document.getElementById("tenureChart");
+        // Add timestamp chart
+        const timeCtx = document.getElementById("timeChart");
+        // Find min and max timestamps
+        const timestamps = data.map((block) => block.Timestamp * 1000);
+        const minTime = Math.min(...timestamps);
 
         // Get tenure change points
         const tenureChangePoints = data
@@ -320,6 +331,63 @@
                 grid: {
                   drawOnChartArea: false, // Only show grid lines for the left y-axis
                 },
+              },
+            },
+          },
+        });
+
+        new Chart(timeCtx, {
+          type: "line",
+          data: {
+            labels: data.map((block) => block.BlockHeight),
+            datasets: [
+              {
+                label: "Block Timestamp",
+                data: data.map((block) => ({
+                  x: block.BlockHeight,
+                  y: new Date(block.Timestamp * 1000), // Convert Unix timestamp to Date
+                })),
+                borderColor: "rgb(75, 192, 192)",
+                tension: 0.1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: "Block Timestamps",
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    const date = new Date(context.parsed.y);
+                    return date.toLocaleString();
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                type: "linear",
+                title: {
+                  display: true,
+                  text: "Block Height",
+                },
+              },
+              y: {
+                type: "time",
+                title: {
+                  display: true,
+                  text: "Time",
+                },
+                time: {
+                  displayFormats: {
+                    hour: "MMM d, HH:mm",
+                  },
+                },
+                min: new Date(minTime - 2 * 60 * 1000),
               },
             },
           },
