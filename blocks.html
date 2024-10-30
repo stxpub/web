@@ -1,0 +1,171 @@
+<!doctype html>
+<html data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stacks Hub</title>
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    <script defer data-domain="hub.stx.pub" src="https://analytics.diwaker.io/js/script.js"></script>
+  </head>
+  <body class="has-navbar-fixed-top">
+    <nav
+      data-theme="dark"
+      class="navbar is-fixed-top"
+      role="navigation"
+      aria-label="main navigation"
+      x-data="{ isOpen: false }">
+      <div class="navbar-brand">
+        <a class="navbar-item" href="/">Stacks Hub: Stats and Graphs</a>
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" @click="isOpen = !isOpen">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div class="navbar-menu" :class="{ 'is-active': isOpen }">
+        <div class="navbar-start">
+          <a class="navbar-item" href="/blocks">Blocks</a>
+          <a class="navbar-item" href="/mempool">Mempool</a>
+          <a class="navbar-item" href="/utils">Utilities</a>
+        </div>
+        <div class="navbar-end">
+          <a class="navbar-item" href="/about">About</a>
+        </div>
+      </div>
+    </nav>
+    <main class="container content">
+      <section class="section">
+        <h2>Block Costs</h2>
+        <div>
+          <canvas id="costChart"></canvas>
+        </div>
+      </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript">
+      // Determine the base URL based on the current hostname
+      const apiBaseUrl = window.location.protocol === "file:" ? "http://localhost:8123" : "https://api.stx.pub";
+
+      function renderCostChart(data) {
+        const ctx = document.getElementById("costChart");
+
+        // Prepare datasets for each cost metric
+        const datasets = [
+          {
+            label: "Read Length",
+            data: data.map((block) => (100 * block.Cost.read_length) / 100000000),
+            borderColor: "rgb(255, 99, 132)",
+            tension: 0.1,
+            yAxisID: "y",
+          },
+          {
+            label: "Read Count",
+            data: data.map((block) => (100 * block.Cost.read_count) / 15000),
+            borderColor: "rgb(54, 162, 235)",
+            tension: 0.1,
+            yAxisID: "y",
+          },
+          {
+            label: "Write Length",
+            data: data.map((block) => (100 * block.Cost.write_length) / 15000000),
+            borderColor: "rgb(75, 192, 192)",
+            tension: 0.1,
+            yAxisID: "y",
+          },
+          {
+            label: "Write Count",
+            data: data.map((block) => (100 * block.Cost.write_count) / 15000),
+            borderColor: "rgb(255, 206, 86)",
+            tension: 0.1,
+            yAxisID: "y",
+          },
+          {
+            label: "Runtime",
+            data: data.map((block) => (100 * block.Cost.runtime) / 5000000000),
+            borderColor: "rgb(153, 102, 255)",
+            tension: 0.1,
+            yAxisID: "y",
+          },
+          {
+            label: "Block Size",
+            data: data.map((block) => block.BlockSize),
+            borderColor: "rgb(255, 159, 64)",
+            tension: 0.1,
+            yAxisID: "y1", // Use the second Y axis
+            borderWidth: 2,
+            borderDash: [5, 5], // Make this line dashed to distinguish it
+          },
+        ];
+
+        new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: data.map((block) => block.BlockHeight),
+            datasets: datasets,
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: "Block Costs and Size Over Time",
+              },
+              tooltip: {
+                mode: "index",
+                intersect: false,
+                callbacks: {
+                  afterBody: function (tooltipItems) {
+                    const idx = tooltipItems[0].dataIndex;
+                    if (data[idx].TenureChanged) {
+                      return "⚠️ Tenure Changed at this block";
+                    }
+                    return "";
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                display: true,
+                title: {
+                  display: true,
+                  text: "Block Height",
+                },
+              },
+              y: {
+                type: "linear",
+                display: true,
+                position: "left",
+                title: {
+                  display: true,
+                  text: "Cost",
+                },
+              },
+              y1: {
+                type: "linear",
+                display: true,
+                position: "right",
+                title: {
+                  display: true,
+                  text: "Block Size (bytes)",
+                },
+                grid: {
+                  drawOnChartArea: false, // Only show grid lines for the left y-axis
+                },
+              },
+            },
+          },
+        });
+      }
+
+      // Fetch and render data when page loads
+      fetch(`${apiBaseUrl}/blocks`)
+        .then((response) => response.json())
+        .then((data) => renderCostChart(data))
+        .catch((error) => console.error("Error fetching block data:", error));
+    </script>
+  </body>
+</html>

@@ -11,7 +11,12 @@
     <script defer data-domain="hub.stx.pub" src="https://analytics.diwaker.io/js/script.js"></script>
   </head>
   <body class="has-navbar-fixed-top">
-    <nav data-theme="dark" class="navbar is-fixed-top" role="navigation" aria-label="main navigation" x-data="{ isOpen: false }">
+    <nav
+      data-theme="dark"
+      class="navbar is-fixed-top"
+      role="navigation"
+      aria-label="main navigation"
+      x-data="{ isOpen: false }">
       <div class="navbar-brand">
         <a class="navbar-item" href="/">Stacks Hub: Stats and Graphs</a>
         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" @click="isOpen = !isOpen">
@@ -23,6 +28,7 @@
       </div>
       <div class="navbar-menu" :class="{ 'is-active': isOpen }">
         <div class="navbar-start">
+          <a class="navbar-item" href="/blocks">Blocks</a>
           <a class="navbar-item" href="/mempool">Mempool</a>
           <a class="navbar-item" href="/utils">Utilities</a>
         </div>
@@ -33,31 +39,31 @@
     </nav>
     <main class="container content">
       <!-- <section class="section table-container" x-data="getMiners()"> -->
-        <!-- <h2>Miner Power (last 144 blocks)</h2> -->
-        <!-- <table class="table"> -->
-          <!-- <thead> -->
-            <!-- <tr> -->
-              <!-- <th>Miner</th> -->
-              <!-- <th>STX Recipient</th> -->
-              <!-- <th>Blocks Won</th> -->
-              <!-- <th>BTC Spent (sats)</th> -->
-              <!-- <th>STX Earnt</th> -->
-              <!-- <th>Win rate</th> -->
-            <!-- </tr> -->
-          <!-- </thead> -->
-          <!-- <tbody> -->
-            <!-- <template x-for="miner in miners"> -->
-              <!-- <tr> -->
-                <!-- <td x-html="btc(miner.BitcoinAddress)"></td> -->
-                <!-- <td x-html="stx(miner.StacksRecipient)"></td> -->
-                <!-- <td x-text="miner.BlocksWon"></td> -->
-                <!-- <td x-text="miner.BtcSpent"></td> -->
-                <!-- <td x-text="miner.StxEarnt"></td> -->
-                <!-- <td x-text="miner.WinRate"></td> -->
-              <!-- </tr> -->
-            <!-- </template> -->
-          <!-- </tbody> -->
-        <!-- </table> -->
+      <!-- <h2>Miner Power (last 144 blocks)</h2> -->
+      <!-- <table class="table"> -->
+      <!-- <thead> -->
+      <!-- <tr> -->
+      <!-- <th>Miner</th> -->
+      <!-- <th>STX Recipient</th> -->
+      <!-- <th>Blocks Won</th> -->
+      <!-- <th>BTC Spent (sats)</th> -->
+      <!-- <th>STX Earnt</th> -->
+      <!-- <th>Win rate</th> -->
+      <!-- </tr> -->
+      <!-- </thead> -->
+      <!-- <tbody> -->
+      <!-- <template x-for="miner in miners"> -->
+      <!-- <tr> -->
+      <!-- <td x-html="btc(miner.BitcoinAddress)"></td> -->
+      <!-- <td x-html="stx(miner.StacksRecipient)"></td> -->
+      <!-- <td x-text="miner.BlocksWon"></td> -->
+      <!-- <td x-text="miner.BtcSpent"></td> -->
+      <!-- <td x-text="miner.StxEarnt"></td> -->
+      <!-- <td x-text="miner.WinRate"></td> -->
+      <!-- </tr> -->
+      <!-- </template> -->
+      <!-- </tbody> -->
+      <!-- </table> -->
       <!-- </section> -->
       <section class="section">
         <h2>Visualizing Block Commits</h2>
