@@ -84,6 +84,22 @@
             blockHeight: block.BlockHeight,
             xIndex: data.findIndex((b) => b.BlockHeight === block.BlockHeight),
           }));
+        const tenureAnnotations = {
+          ...tenureChangePoints.reduce(
+            (acc, point) => ({
+              ...acc,
+              [`tenure-${point.blockHeight}`]: {
+                type: "line",
+                xMin: point.xIndex,
+                xMax: point.xIndex,
+                borderColor: "rgba(0, 0, 0, 0.5)",
+                borderWidth: 2,
+                borderDash: [5, 5],
+              },
+            }),
+            {},
+          ),
+        };
 
         // Prepare datasets for each cost metric
         const blockData = [
@@ -171,7 +187,7 @@
           },
           {
             label: "Tenure Fees",
-            data: data.map((block) => block.TenureTxFees/1000000),
+            data: data.map((block) => block.TenureTxFees / 1000000),
             borderColor: "rgb(255, 159, 64)",
             tension: 0.1,
             yAxisID: "y1", // Use the second Y axis
@@ -207,22 +223,7 @@
                 },
               },
               annotation: {
-                annotations: {
-                  ...tenureChangePoints.reduce(
-                    (acc, point) => ({
-                      ...acc,
-                      [`tenure-${point.blockHeight}`]: {
-                        type: "line",
-                        xMin: point.xIndex,
-                        xMax: point.xIndex,
-                        borderColor: "rgba(0, 0, 0, 0.5)",
-                        borderWidth: 2,
-                        borderDash: [5, 5],
-                      },
-                    }),
-                    {},
-                  ),
-                },
+                annotations: tenureAnnotations,
               },
             },
             scales: {
@@ -285,22 +286,7 @@
                 },
               },
               annotation: {
-                annotations: {
-                  ...tenureChangePoints.reduce(
-                    (acc, point) => ({
-                      ...acc,
-                      [`tenure-${point.blockHeight}`]: {
-                        type: "line",
-                        xMin: point.xIndex,
-                        xMax: point.xIndex,
-                        borderColor: "rgba(0, 0, 0, 0.5)",
-                        borderWidth: 2,
-                        borderDash: [5, 5],
-                      },
-                    }),
-                    {},
-                  ),
-                },
+                annotations: tenureAnnotations,
               },
             },
             scales: {
@@ -367,10 +353,12 @@
                   },
                 },
               },
+              annotation: {
+                annotations: tenureAnnotations,
+              },
             },
             scales: {
               x: {
-                type: "linear",
                 title: {
                   display: true,
                   text: "Block Height",
