@@ -49,7 +49,7 @@
         <h2>Tenure Costs and Fees</h2>
         <ul>
           <li>Left Y axis shows the normalized tenure cost by block as a percentage, for easier comparison.</li>
-          <li>Right Y axis shows tenure transaction fees in uSTX.</li>
+          <li>Right Y axis shows tenure transaction fees in STX.</li>
         </ul>
         <div>
           <canvas id="tenureChart"></canvas>
@@ -160,7 +160,7 @@
           },
           {
             label: "Tenure Fees",
-            data: data.map((block) => block.TenureTxFees),
+            data: data.map((block) => block.TenureTxFees/1000000),
             borderColor: "rgb(255, 159, 64)",
             tension: 0.1,
             yAxisID: "y1", // Use the second Y axis
@@ -315,7 +315,7 @@
                 position: "right",
                 title: {
                   display: true,
-                  text: "Tenure Fees (uSTX)",
+                  text: "Tenure Fees (STX)",
                 },
                 grid: {
                   drawOnChartArea: false, // Only show grid lines for the left y-axis
