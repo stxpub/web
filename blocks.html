@@ -62,6 +62,7 @@
     </main>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns@3.6.0/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script type="text/javascript">
@@ -196,6 +197,21 @@
           },
         ];
 
+        const zoomOptions = {
+          limits: {
+            x: { min: "original", max: "original" },
+          },
+          zoom: {
+            drag: {
+              enabled: true,
+            },
+            wheel: {
+              enabled: true,
+            },
+            mode: "x",
+          },
+        };
+
         const blockChart = new Chart(ctx, {
           type: "line",
           data: {
@@ -225,6 +241,7 @@
               annotation: {
                 annotations: tenureAnnotations,
               },
+              zoom: zoomOptions,
             },
             scales: {
               x: {
@@ -288,6 +305,7 @@
               annotation: {
                 annotations: tenureAnnotations,
               },
+              zoom: zoomOptions,
             },
             scales: {
               x: {
@@ -356,6 +374,7 @@
               annotation: {
                 annotations: tenureAnnotations,
               },
+              zoom: zoomOptions,
             },
             scales: {
               x: {
