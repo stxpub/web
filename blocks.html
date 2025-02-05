@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Stacks Hub</title>
     <link rel="icon" href="/favicon.svg" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" />
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.3/css/bulma.min.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
     <script defer data-domain="hub.stx.pub" src="https://analytics.diwaker.io/js/script.js"></script>
   </head>
   <body class="has-navbar-fixed-top">
@@ -58,12 +58,15 @@
         <div>
           <canvas id="timeChart"></canvas>
         </div>
+        <div>
+          <canvas id="arrivalCdf"></canvas>
+        </div>
       </section>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/date-fns@3.6.0/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@4.1.0/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script type="text/javascript">
       // Determine the base URL based on the current hostname
@@ -74,6 +77,9 @@
         const tenureCtx = document.getElementById("tenureChart");
         // Add timestamp chart
         const timeCtx = document.getElementById("timeChart");
+        // Block arrival CDF
+        const arrivalCdfCtx = document.getElementById("arrivalCdf");
+
         // Find min and max timestamps
         const timestamps = data.map((block) => block.Timestamp * 1000);
         const minTime = Math.min(...timestamps);
@@ -395,6 +401,70 @@
                   },
                 },
                 min: new Date(minTime - 2 * 60 * 1000),
+              },
+            },
+          },
+        });
+
+        // Calculate time between blocks
+        const blockTimes = [];
+        for (let i = 1; i < data.length; i++) {
+          const timeDiff = data[i].Timestamp - data[i - 1].Timestamp;
+          blockTimes.push(timeDiff);
+        }
+
+        // Sort times for CDF
+        blockTimes.sort((a, b) => a - b);
+
+        // Calculate CDF points
+        const cdfPoints = blockTimes.map((_, index) => ({
+          x: blockTimes[index],
+          y: ((index + 1) / blockTimes.length) * 100,
+        }));
+
+        new Chart(arrivalCdfCtx, {
+          type: "line",
+          data: {
+            datasets: [
+              {
+                label: "Block Arrival Time CDF",
+                data: cdfPoints,
+                borderColor: "rgb(75, 192, 192)",
+                tension: 0.1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: "Block Arrival Time Distribution",
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return `${context.parsed.y.toFixed(1)}% of blocks within ${context.parsed.x.toFixed(1)} seconds`;
+                  },
+                },
+              },
+              zoom: zoomOptions,
+            },
+            scales: {
+              x: {
+                type: "logarithmic",
+                title: {
+                  display: true,
+                  text: "Seconds Between Blocks",
+                },
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: "Cumulative Percentage",
+                },
+                min: 0,
+                max: 100,
               },
             },
           },
